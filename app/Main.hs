@@ -30,7 +30,6 @@ prompt = do
 
     unless (choice == "9") $ do
     
-        {--
         case choice of 
             "1" -> putStrLn "TODO"
             "2" -> putStrLn "TODO"
@@ -40,7 +39,6 @@ prompt = do
             "6" -> putStrLn "TODO"
             "7" -> putStrLn "TODO"
             "8" -> putStrLn "TODO"
-        --}
         
         prompt
 
