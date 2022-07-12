@@ -39,6 +39,7 @@ prompt = do
             "6" -> putStrLn "TODO"
             "7" -> putStrLn "TODO"
             "8" -> putStrLn "TODO"
+            otherwise -> putStrLn "OPCAO INVALIDA!"
         
         prompt
 
