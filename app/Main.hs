@@ -3,21 +3,11 @@ module Main where
 import Control.Monad (unless)
 import System.Exit
 import System.IO
-  ( IO,
-    IOMode (ReadMode, WriteMode),
-    hFlush,
-    openFile,
-    stdout,
-  )
 import Text.ParserCombinators.ReadP (choice)
 
 main :: IO ()
 main = do
   menuBoasVindasPrompt
-
----                   Login               ->
---- menuBoasVindas ->
----                   Criar Conta
 
 ---menuPrincipalPrompt
 
@@ -29,7 +19,7 @@ menuBoasVindasPrompt = do
   choice <- getLine
   do
     case choice of
-      "1" -> putStrLn "LOGIN"
+      "1" -> menuLogin
       "2" -> menuCriarConta
       otherwise -> invalidOption menuBoasVindas
 
@@ -40,7 +30,7 @@ menuPrincipalPrompt = do
   hFlush stdout
   choice <- getLine
 
-  unless (choice == "9") $ do
+  unless (choice == "8") $ do
     case choice of
       "1" -> putStrLn "TODO"
       "2" -> putStrLn "TODO"
@@ -49,7 +39,6 @@ menuPrincipalPrompt = do
       "5" -> putStrLn "TODO"
       "6" -> putStrLn "TODO"
       "7" -> putStrLn "TODO"
-      "8" -> putStrLn "TODO"
       otherwise -> invalidOption menuPrincipalPrompt
 
 menuBoasVindas :: IO ()
@@ -64,41 +53,51 @@ menuPrincipal :: IO ()
 menuPrincipal = do
   putStrLn "\nMENU:\n"
   putStrLn "(1) Criar conta"
-  putStrLn "(2) Fazer login"
-  putStrLn "(3) Compra ingresso"
-  putStrLn "(4) Listar dias do festival"
-  putStrLn "(5) Consultar comanda online"
-  putStrLn "(6) Consultar atracao"
-  putStrLn "(7) Consultar dia do festival"
-  putStrLn "(8) Consultar atracoes por data"
-  putStrLn "(9) Sair\n"
+  putStrLn "(2) Compra ingresso"
+  putStrLn "(3) Listar dias do festival"
+  putStrLn "(4) Consultar comanda online"
+  putStrLn "(5) Consultar atracao"
+  putStrLn "(6) Consultar dia do festival"
+  putStrLn "(7) Consultar atracoes por data"
+  putStrLn "(8) Sair\n"
 
 --- CRIAR CONTA -> CPF -> VALIDO -> SENHA -> VALIDA -> salvar em um TXT
---- CRIAR CONTA -> CPF -> VALIDO -> SENHA -> VALIDA -> VALIDAR SE ESTÁ NO TXT
+--- LOGAR CONTA  -> CPF -> VALIDO -> SENHA -> VALIDA -> VALIDAR SE ESTÁ NO TXT
 
 menuCriarConta :: IO ()
 menuCriarConta = do
-  getCpf
-
-getCpf :: IO ()
-getCpf = do
   putStr "\n Digite seu CPF (apenas números)"
   putStr "> "
   hFlush stdout
   cpf <- getLine
-  if checkValidCpf cpf
-    then getSenha
-    else invalidOption getCpf
-
-getSenha :: IO ()
-getSenha = do
   putStr "\n Digite sua senha (no mínimo 6 dígitos)"
   putStr "> "
   hFlush stdout
   senha <- getLine
-  if checkValidSenha senha
-    then print "salva no txt"
-    else invalidOption getSenha
+  if checkValidCpf cpf && checkValidSenha senha
+    then writeDB cpf senha "users"
+  else invalidOption menuCriarConta
+
+menuLogin :: IO ()
+menuLogin = do
+  putStr "\n Digite seu CPF (apenas números)"
+  putStr "> "
+  hFlush stdout
+  cpf <- getLine
+  putStr "\n Digite sua senha (no mínimo 6 dígitos)"
+  putStr "> "
+  hFlush stdout
+  senha <- getLine
+  if checkValidCpf cpf && checkValidSenha senha
+    then do 
+        let finalPath = "app/database/" ++ "users" ++ "/" ++ cpf ++ ".txt" 
+        file <- openFile finalPath ReadMode
+        senhaCadastro <- hGetContents file
+        if senha == senhaCadastro then do menuPrincipal
+        else do
+          putStrLn "ERRO AO FAZER LOGIN" 
+          menuLogin
+  else invalidOption menuCriarConta
 
 checkValidCpf :: String -> Bool
 checkValidCpf cpf = checkValidCpfSize cpf && checkIfElementsAreNumbers cpf
@@ -130,3 +129,8 @@ invalidOptionInput :: IO () -> IO ()
 invalidOptionInput f = do
   putStrLn "\nInput incorreto!"
   f
+
+writeDB :: String -> String -> String -> IO ()
+writeDB cpf senha path = do
+  let finalPath = "app/database/" ++ path ++ "/" ++ cpf ++ ".txt" 
+  writeFile finalPath senha 
