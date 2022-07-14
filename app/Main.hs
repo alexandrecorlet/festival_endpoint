@@ -78,6 +78,7 @@ menuCriarConta = do
     then do
       writeDB cpf senha "users"
       putStrLn "Conta Criada!\n"
+      saveCurrentUser cpf
       menuPrincipal
     else invalidOptionInput menuCriarConta
 
@@ -97,11 +98,39 @@ menuLogin = do
       file <- openFile finalPath ReadMode
       senhaCadastro <- hGetContents file
       if senha == senhaCadastro
-        then do menuPrincipal
+        then do 
+          saveCurrentUser cpf
+          menuPrincipal
         else do
           putStrLn "ERRO AO FAZER LOGIN"
           menuLogin
     else invalidOptionInput menuCriarConta
+
+    -- | Display Itens com itens +18
+menuItemsCompleto :: IO ()
+menuItemsCompleto = do
+  putStrLn "\nItens:\n"
+  putStrLn "(0) Coxinha de Frango 300g - 20R$"
+  putStrLn "(1) Água 300ml - 11R$"
+  putStrLn "(2) Refrigerante 300ml - 11R$"
+  putStrLn "(3) Boné do festival - 100R$"
+  putStrLn "(4) Pizza de calabresa 300g - 20R$\n"
+  putStrLn "(5) Cerveja 300ml - 10R$"
+  putStrLn "(6) Cachaça 100ml - 35R$"
+  putStrLn "(7) Pitu 100ml - 70R$"
+  putStrLn "(8) Pinga 95ml - 80R$"
+  putStrLn "(9) Voltar ao menu principal\n"
+
+      -- | Display Itens Não alcóolicos
+menuItemsIncompleto :: IO ()
+menuItemsIncompleto = do
+  putStrLn "\nItens:\n"
+  putStrLn "(0) Coxinha de Frango 300g - 20R$"
+  putStrLn "(1) Água 300ml - 11R$"
+  putStrLn "(2) Refrigerante 300ml - 11R$"
+  putStrLn "(3) Boné do festival - 100R$"
+  putStrLn "(4) Pizza de calabresa 300g - 20R$\n"
+  putStrLn "(5) Voltar ao menu principal\n"
 
 checkValidCpf :: String -> Bool
 checkValidCpf cpf = checkValidCpfSize cpf && checkIfElementsAreNumbers cpf
@@ -138,3 +167,9 @@ writeDB :: String -> String -> String -> IO ()
 writeDB cpf senha path = do
   let finalPath = "app/database/" ++ path ++ "/" ++ cpf ++ ".txt"
   writeFile finalPath senha
+
+saveCurrentUser :: String -> IO ()
+saveCurrentUser cpf = do
+  let finalPath = "app/database/currentUser.txt"
+  writeFile cpf
+
