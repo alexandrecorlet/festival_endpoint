@@ -21,7 +21,7 @@ menuBoasVindasPrompt = do
     case choice of
       "1" -> menuLogin
       "2" -> menuCriarConta
-      otherwise -> invalidOption menuBoasVindas
+      otherwise -> invalidOptionInput menuBoasVindas
 
 menuPrincipalPrompt :: IO ()
 menuPrincipalPrompt = do
@@ -39,7 +39,7 @@ menuPrincipalPrompt = do
       "5" -> putStrLn "TODO"
       "6" -> putStrLn "TODO"
       "7" -> putStrLn "TODO"
-      otherwise -> invalidOption menuPrincipalPrompt
+      otherwise -> invalidOptionInput menuPrincipalPrompt
 
 menuBoasVindas :: IO ()
 menuBoasVindas = do
@@ -66,17 +66,20 @@ menuPrincipal = do
 
 menuCriarConta :: IO ()
 menuCriarConta = do
-  putStr "\n Digite seu CPF (apenas números)"
-  putStr "> "
+  putStr "\n Digite seu CPF (apenas números)\n"
+  putStr "\n> "
   hFlush stdout
   cpf <- getLine
-  putStr "\n Digite sua senha (no mínimo 6 dígitos)"
-  putStr "> "
+  putStr "\n Digite sua senha (no mínimo 6 dígitos)\n"
+  putStr "\n> "
   hFlush stdout
   senha <- getLine
   if checkValidCpf cpf && checkValidSenha senha
-    then writeDB cpf senha "users"
-  else invalidOption menuCriarConta
+    then do
+      writeDB cpf senha "users"
+      putStrLn "Conta Criada!\n"
+      menuPrincipal
+    else invalidOptionInput menuCriarConta
 
 menuLogin :: IO ()
 menuLogin = do
@@ -89,15 +92,16 @@ menuLogin = do
   hFlush stdout
   senha <- getLine
   if checkValidCpf cpf && checkValidSenha senha
-    then do 
-        let finalPath = "app/database/" ++ "users" ++ "/" ++ cpf ++ ".txt" 
-        file <- openFile finalPath ReadMode
-        senhaCadastro <- hGetContents file
-        if senha == senhaCadastro then do menuPrincipal
+    then do
+      let finalPath = "app/database/" ++ "users" ++ "/" ++ cpf ++ ".txt"
+      file <- openFile finalPath ReadMode
+      senhaCadastro <- hGetContents file
+      if senha == senhaCadastro
+        then do menuPrincipal
         else do
-          putStrLn "ERRO AO FAZER LOGIN" 
+          putStrLn "ERRO AO FAZER LOGIN"
           menuLogin
-  else invalidOption menuCriarConta
+    else invalidOptionInput menuCriarConta
 
 checkValidCpf :: String -> Bool
 checkValidCpf cpf = checkValidCpfSize cpf && checkIfElementsAreNumbers cpf
@@ -119,8 +123,8 @@ checkValidSenha senha
   | otherwise = False
 
 -- | Prompt user
-invalidOption :: IO () -> IO ()
-invalidOption f = do
+invalidOption :: String -> IO () -> IO ()
+invalidOption msg f = do
   putStrLn "\nOPCAO INVALIDA!"
   f
 
@@ -132,5 +136,5 @@ invalidOptionInput f = do
 
 writeDB :: String -> String -> String -> IO ()
 writeDB cpf senha path = do
-  let finalPath = "app/database/" ++ path ++ "/" ++ cpf ++ ".txt" 
-  writeFile finalPath senha 
+  let finalPath = "app/database/" ++ path ++ "/" ++ cpf ++ ".txt"
+  writeFile finalPath senha
