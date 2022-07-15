@@ -1,15 +1,16 @@
 module Main where
-
 import Control.Monad (unless)
 import System.Exit
 import System.IO
 import Text.ParserCombinators.ReadP (choice)
+import GHC.IO.Encoding ( setLocaleEncoding )
 
 main :: IO ()
 main = do
+  setLocaleEncoding utf8
   menuBoasVindasPrompt
 
----menuPrincipalPrompt
+--menuPrincipalPrompt
 
 menuBoasVindasPrompt :: IO ()
 menuBoasVindasPrompt = do
@@ -30,7 +31,7 @@ menuPrincipalPrompt = do
   hFlush stdout
   choice <- getLine
 
-  unless (choice == "8") $ do
+  unless (choice == "7") $ do
     case choice of
       "1" -> menuComprarIngresso
       "2" -> listarAtracoesDoFestival
@@ -42,8 +43,8 @@ menuPrincipalPrompt = do
 
 menuBoasVindas :: IO ()
 menuBoasVindas = do
-  putStrLn "\n Seja bem-vindo ao Festival Endpoint!"
-  putStrLn "\n Você já possui uma conta?\n"
+  putStrLn "\nSeja bem-vindo ao Festival Endpoint!"
+  putStrLn "\nVocê já possui uma conta?\n"
   putStrLn "(1) Sim"
   putStrLn "(2) Não\n"
 
@@ -72,9 +73,18 @@ menuCriarConta = do
   putStr "\n> "
   hFlush stdout
   senha <- getLine
+  putStrLn "\nVocê é maior de idade?\n"
+  putStrLn "(0) - Não"
+  putStrLn "(1) - Sim\n"
+  putStr "> "
+  hFlush stdout
+  maioridade <- getLine
   if checkValidCpf cpf && checkValidSenha senha
     then do
       writeDB cpf senha "users"
+      writeDB cpf maioridade "maioridade"
+      writeDB cpf "" "comanda"
+      writeDB cpf "0" "valorComanda"
       putStrLn "Conta Criada!\n"
       saveCurrentUser cpf
       menuPrincipalPrompt
@@ -140,12 +150,6 @@ menuListarDiasDeUmFestival = do
 
 menuComprarIngresso :: IO ()
 menuComprarIngresso = do
-  putStrLn "\nVocê é maior de idade?\n"
-  putStrLn "(0) - Não"
-  putStrLn "(1) - Sim\n"
-  putStr "> "
-  hFlush stdout
-  maioridade <- getLine
   putStrLn "\nQual o id do dia do festival?\n"
   putStr "> "
   hFlush stdout
@@ -267,3 +271,47 @@ addUnderscore "" = ""
 addUnderscore (x : xs)
   | x == ' ' = '_' : addUnderscore xs
   | otherwise = x : addUnderscore xs
+
+getComanda :: IO ()
+getComanda = do
+  cpf <- readFile "app/database/currentUser.txt"
+
+  let valorComandaPath =  "app/database/valorComanda/" ++ cpf ++ ".txt"
+  let comandaPath =  "app/database/comanda/" ++ cpf ++ ".txt"
+  valorComanda <- readFile valorComandaPath
+  comanda <- readFile comandaPath
+
+  putStrLn("Valor total: " ++ valorComanda ++ "\n" ++ comanda)
+
+adicionarCompra :: String -> String-> IO ()
+adicionarCompra itemId qntd = do
+  cpf <- readFile "app/database/currentUser.txt"
+  let itemPath = "app/database/itens/" ++ itemId ++ ".txt"
+  let comandaPath = "app/database/comanda/" ++ cpf ++ ".txt"
+  let valorComandaPath =  "app/database/valorComanda/" ++ cpf ++ ".txt"
+
+  item <- readFile itemPath
+
+  valorComandaFile <- openFile valorComandaPath ReadWriteMode
+  valorComanda <- hGetContents valorComandaFile
+
+                    -- funcao que le ultima linha do arquivo -int
+  let descricaoArray = map ((!!) (lines item)) [(length (lines item)-2)]
+  let valorItemArray = map ((!!) (lines item)) [(length (lines item)-1)]
+  let descricao = head descricaoArray
+  let valorItem = head valorItemArray
+  
+  let qntdInt = read qntd :: Integer
+  let valorComandaInt = read valorComanda :: Integer
+  let valorItemInt = read valorItem:: Integer
+
+  let newComanda ="\n" ++ descricao ++ " - "  ++ qntd
+  let newValorComanda = valorComandaInt + (qntdInt*valorItemInt)
+
+  let newValorComandaString = show newValorComanda
+
+  --seq fecha o arquivo aberto para poder sobesscrever em paz
+  putStrLn ("Seu total agora é de " ++ newValorComandaString ++ "R$")
+  valorComanda `seq` hClose valorComandaFile
+  writeFile valorComandaPath newValorComandaString
+  appendFile comandaPath newComanda
