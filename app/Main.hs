@@ -1,9 +1,10 @@
 module Main where
+
 import Control.Monad (unless)
+import GHC.IO.Encoding (setLocaleEncoding)
 import System.Exit
 import System.IO
 import Text.ParserCombinators.ReadP (choice)
-import GHC.IO.Encoding ( setLocaleEncoding )
 
 main :: IO ()
 main = do
@@ -52,7 +53,7 @@ menuBoasVindas = do
 menuPrincipal :: IO ()
 menuPrincipal = do
   putStrLn "\nMENU:\n"
-  putStrLn "(1) Compra ingresso"
+  putStrLn "(1) Comprar ingresso"
   putStrLn "(2) Listar dias do festival"
   putStrLn "(3) Consultar comanda online"
   putStrLn "(4) Consultar atracao"
@@ -85,7 +86,7 @@ menuCriarConta = do
       writeDB cpf maioridade "maioridade"
       writeDB cpf "" "comanda"
       writeDB cpf "0" "valorComanda"
-      putStrLn "Conta Criada!\n"
+      putStrLn "\nConta Criada!\n"
       saveCurrentUser cpf
       menuPrincipalPrompt
     else invalidOptionInput menuCriarConta
@@ -121,7 +122,7 @@ menuItemsCompleto = do
   putStrLn "(1) Água 300ml - 11R$"
   putStrLn "(2) Refrigerante 300ml - 11R$"
   putStrLn "(3) Boné do festival - 100R$"
-  putStrLn "(4) Pizza de calabresa 300g - 20R$\n"
+  putStrLn "(4) Pizza de calabresa 300g - 20R$"
   putStrLn "(5) Cerveja 300ml - 10R$"
   putStrLn "(6) Cachaça 100ml - 35R$"
   putStrLn "(7) Pitu 100ml - 70R$"
@@ -135,17 +136,7 @@ menuItemsIncompleto = do
   putStrLn "(1) Água 300ml - 11R$"
   putStrLn "(2) Refrigerante 300ml - 11R$"
   putStrLn "(3) Boné do festival - 100R$"
-  putStrLn "(4) Pizza de calabresa 300g - 20R$\n"
-  putStrLn "(5) Voltar ao menu principal\n"
-
-menuListarDiasDeUmFestival :: IO ()
-menuListarDiasDeUmFestival = do
-  putStrLn "\nItens:\n"
-  putStrLn "(0) Coxinha de Frango 300g - 20R$"
-  putStrLn "(1) Água 300ml - 11R$"
-  putStrLn "(2) Refrigerante 300ml - 11R$"
-  putStrLn "(3) Boné do festival - 100R$"
-  putStrLn "(4) Pizza de calabresa 300g - 20R$\n"
+  putStrLn "(4) Pizza de calabresa 300g - 20R$"
   putStrLn "(5) Voltar ao menu principal\n"
 
 menuComprarIngresso :: IO ()
@@ -171,8 +162,9 @@ listarAtracoesDoFestival :: IO ()
 listarAtracoesDoFestival = do
   let atracoesPath = "app/database/diasDeFestival/atracoesFestival.txt"
   file <- openFile atracoesPath ReadMode
-  atracoes <- hGetContents file
-  putStrLn atracoes
+  att <- hGetContents file
+  let atracoes = "\n" ++ att ++ "\n"
+  putStr atracoes
   menuPrincipalPrompt
 
 consultarAtracao :: IO ()
@@ -184,7 +176,8 @@ consultarAtracao = do
   let formatedAtracao = addUnderscore atracao
   let path = "app/database/atracoes/" ++ formatedAtracao ++ ".txt"
   file <- openFile path ReadMode
-  atracaoInfo <- hGetContents file
+  att <- hGetContents file
+  let atracaoInfo = "\n" ++ att
   putStrLn atracaoInfo
   menuPrincipalPrompt
 
@@ -198,7 +191,8 @@ consultarDiaDoFestival = do
   diaDoFestival <- getLine
   let path = "app/database/diasDeFestival/" ++ diaDoFestival ++ ".txt"
   file <- openFile path ReadMode
-  diaDoFestivalInfo <- hGetContents file
+  ddf <- hGetContents file
+  let diaDoFestivalInfo = "\n" ++ ddf
   putStrLn diaDoFestivalInfo
   menuPrincipalPrompt
 
@@ -210,12 +204,35 @@ comandaMenu = do
   putStr "> "
   hFlush stdout
   input <- getLine
-  if (input == "1")
-    then do (print "função de compra")
-    else do (print "função de listar items")
+  if input == "1"
+    then do
+      let pathCpf = "app/database/currentUser.txt"
+      fileCpf <- openFile pathCpf ReadMode
+      cpf <- hGetContents fileCpf
+      let pathMaioridade = "app/database/maioridade/" ++ cpf ++ ".txt"
+      fileMaioridade <- openFile pathMaioridade ReadMode
+      maioridade <- hGetContents fileMaioridade
+      if maioridade == "1"
+        then do menuItemsCompleto
+        else do menuItemsIncompleto
+      putStrLn "\nDigite o código do item desejado:\n"
+      putStr "> "
+      hFlush stdout
+      idItem <- getLine
+      if idItem == "5"
+        then do menuPrincipalPrompt
+        else do putStrLn "\nDigite a quantidade desejada:\n"
+      putStr "> "
+      hFlush stdout
+      qnt <- getLine
+      adicionarCompra idItem qnt
+      menuPrincipalPrompt
+    else do
+      getComanda
+      menuPrincipalPrompt
 
 checkValidIngressoId :: String -> Bool
-checkValidIngressoId id = id `elem` ["1", "2", "3", "4", "5", "6"]
+checkValidIngressoId id = id `elem` ["L1", "L2", "L3", "R1", "R2", "R3"]
 
 checkValidCpf :: String -> Bool
 checkValidCpf cpf = checkValidCpfSize cpf && checkIfElementsAreNumbers cpf
@@ -275,38 +292,38 @@ addUnderscore (x : xs)
 getComanda :: IO ()
 getComanda = do
   cpf <- readFile "app/database/currentUser.txt"
-
-  let valorComandaPath =  "app/database/valorComanda/" ++ cpf ++ ".txt"
-  let comandaPath =  "app/database/comanda/" ++ cpf ++ ".txt"
+  let valorComandaPath = "app/database/valorComanda/" ++ cpf ++ ".txt"
+  let comandaPath = "app/database/comanda/" ++ cpf ++ ".txt"
   valorComanda <- readFile valorComandaPath
   comanda <- readFile comandaPath
 
-  putStrLn("Valor total: " ++ valorComanda ++ "\n" ++ comanda)
+  putStrLn ("Valor total: " ++ valorComanda ++ "\n" ++ comanda)
 
-adicionarCompra :: String -> String-> IO ()
+adicionarCompra :: String -> String -> IO ()
 adicionarCompra itemId qntd = do
   cpf <- readFile "app/database/currentUser.txt"
   let itemPath = "app/database/itens/" ++ itemId ++ ".txt"
   let comandaPath = "app/database/comanda/" ++ cpf ++ ".txt"
-  let valorComandaPath =  "app/database/valorComanda/" ++ cpf ++ ".txt"
+  let valorComandaPath = "app/database/valorComanda/" ++ cpf ++ ".txt"
 
   item <- readFile itemPath
 
   valorComandaFile <- openFile valorComandaPath ReadWriteMode
   valorComanda <- hGetContents valorComandaFile
 
-                    -- funcao que le ultima linha do arquivo -int
-  let descricaoArray = map ((!!) (lines item)) [(length (lines item)-2)]
-  let valorItemArray = map ((!!) (lines item)) [(length (lines item)-1)]
+  -- funcao que le ultima linha do arquivo -int
+  let descricaoArray = map ((!!) (lines item)) [(length (lines item) -2)]
+  let valorItemArray = map ((!!) (lines item)) [(length (lines item) -1)]
   let descricao = head descricaoArray
+
   let valorItem = head valorItemArray
-  
+
   let qntdInt = read qntd :: Integer
   let valorComandaInt = read valorComanda :: Integer
-  let valorItemInt = read valorItem:: Integer
+  let valorItemInt = read valorItem :: Integer
 
-  let newComanda ="\n" ++ descricao ++ " - "  ++ qntd
-  let newValorComanda = valorComandaInt + (qntdInt*valorItemInt)
+  let newComanda = descricao ++ " - " ++ qntd ++ "\n"
+  let newValorComanda = valorComandaInt + (qntdInt * valorItemInt)
 
   let newValorComandaString = show newValorComanda
 
