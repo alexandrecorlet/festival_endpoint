@@ -25,20 +25,19 @@ menuBoasVindasPrompt = do
 
 menuPrincipalPrompt :: IO ()
 menuPrincipalPrompt = do
-  menuPrincipalPrompt
+  menuPrincipal
   putStr "> "
   hFlush stdout
   choice <- getLine
 
   unless (choice == "8") $ do
     case choice of
-      "1" -> putStrLn "TODO"
-      "2" -> putStrLn "TODO"
-      "3" -> putStrLn "TODO"
-      "4" -> putStrLn "TODO"
-      "5" -> putStrLn "TODO"
+      "1" -> menuComprarIngresso
+      "2" -> listarAtracoesDoFestival
+      "3" -> comandaMenu
+      "4" -> consultarAtracao
+      "5" -> consultarDiaDoFestival
       "6" -> putStrLn "TODO"
-      "7" -> putStrLn "TODO"
       otherwise -> invalidOptionInput menuPrincipalPrompt
 
 menuBoasVindas :: IO ()
@@ -52,14 +51,13 @@ menuBoasVindas = do
 menuPrincipal :: IO ()
 menuPrincipal = do
   putStrLn "\nMENU:\n"
-  putStrLn "(1) Criar conta"
-  putStrLn "(2) Compra ingresso"
-  putStrLn "(3) Listar dias do festival"
-  putStrLn "(4) Consultar comanda online"
-  putStrLn "(5) Consultar atracao"
-  putStrLn "(6) Consultar dia do festival"
-  putStrLn "(7) Consultar atracoes por data"
-  putStrLn "(8) Sair\n"
+  putStrLn "(1) Compra ingresso"
+  putStrLn "(2) Listar dias do festival"
+  putStrLn "(3) Consultar comanda online"
+  putStrLn "(4) Consultar atracao"
+  putStrLn "(5) Consultar dia do festival"
+  putStrLn "(6) Consultar atracoes por data"
+  putStrLn "(7) Sair\n"
 
 --- CRIAR CONTA -> CPF -> VALIDO -> SENHA -> VALIDA -> salvar em um TXT
 --- LOGAR CONTA  -> CPF -> VALIDO -> SENHA -> VALIDA -> VALIDAR SE ESTÁ NO TXT
@@ -79,7 +77,7 @@ menuCriarConta = do
       writeDB cpf senha "users"
       putStrLn "Conta Criada!\n"
       saveCurrentUser cpf
-      menuPrincipal
+      menuPrincipalPrompt
     else invalidOptionInput menuCriarConta
 
 menuLogin :: IO ()
@@ -98,15 +96,14 @@ menuLogin = do
       file <- openFile finalPath ReadMode
       senhaCadastro <- hGetContents file
       if senha == senhaCadastro
-        then do 
+        then do
           saveCurrentUser cpf
-          menuPrincipal
+          menuPrincipalPrompt
         else do
           putStrLn "ERRO AO FAZER LOGIN"
           menuLogin
     else invalidOptionInput menuCriarConta
 
-    -- | Display Itens com itens +18
 menuItemsCompleto :: IO ()
 menuItemsCompleto = do
   putStrLn "\nItens:\n"
@@ -121,7 +118,6 @@ menuItemsCompleto = do
   putStrLn "(8) Pinga 95ml - 80R$"
   putStrLn "(9) Voltar ao menu principal\n"
 
-      -- | Display Itens Não alcóolicos
 menuItemsIncompleto :: IO ()
 menuItemsIncompleto = do
   putStrLn "\nItens:\n"
@@ -131,6 +127,91 @@ menuItemsIncompleto = do
   putStrLn "(3) Boné do festival - 100R$"
   putStrLn "(4) Pizza de calabresa 300g - 20R$\n"
   putStrLn "(5) Voltar ao menu principal\n"
+
+menuListarDiasDeUmFestival :: IO ()
+menuListarDiasDeUmFestival = do
+  putStrLn "\nItens:\n"
+  putStrLn "(0) Coxinha de Frango 300g - 20R$"
+  putStrLn "(1) Água 300ml - 11R$"
+  putStrLn "(2) Refrigerante 300ml - 11R$"
+  putStrLn "(3) Boné do festival - 100R$"
+  putStrLn "(4) Pizza de calabresa 300g - 20R$\n"
+  putStrLn "(5) Voltar ao menu principal\n"
+
+menuComprarIngresso :: IO ()
+menuComprarIngresso = do
+  putStrLn "\nVocê é maior de idade?\n"
+  putStrLn "(0) - Não"
+  putStrLn "(1) - Sim\n"
+  putStr "> "
+  hFlush stdout
+  maioridade <- getLine
+  putStrLn "\nQual o id do dia do festival?\n"
+  putStr "> "
+  hFlush stdout
+  idDiaDoFestival <- getLine
+  if checkValidIngressoId idDiaDoFestival
+    then do
+      let cpfPath = "app/database/currentUser.txt"
+      file <- openFile cpfPath ReadMode
+      cpf <- hGetContents file
+      let path = "app/database/ingressos/" ++ cpf ++ ".txt"
+      --- Salvar ingresso
+      writeFile path idDiaDoFestival
+      print "Ingresso comprado com sucessso!"
+      menuPrincipalPrompt
+    else do
+      invalidId menuPrincipalPrompt --- salva ingresso do cachorro
+
+listarAtracoesDoFestival :: IO ()
+listarAtracoesDoFestival = do
+  let atracoesPath = "app/database/diasDeFestival/atracoesFestival.txt"
+  file <- openFile atracoesPath ReadMode
+  atracoes <- hGetContents file
+  putStrLn atracoes
+  menuPrincipalPrompt
+
+consultarAtracao :: IO ()
+consultarAtracao = do
+  putStrLn "\nDigite o nome da atração:\n"
+  putStr "> "
+  hFlush stdout
+  atracao <- getLine
+  let formatedAtracao = addUnderscore atracao
+  let path = "app/database/atracoes/" ++ formatedAtracao ++ ".txt"
+  file <- openFile path ReadMode
+  atracaoInfo <- hGetContents file
+  putStrLn atracaoInfo
+  menuPrincipalPrompt
+
+consultarDiaDoFestival :: IO ()
+consultarDiaDoFestival = do
+  putStrLn "\nDigite o código do dia do festival"
+  putStrLn "\n(Utilize a inicial do Festival e o número referente ao dia do festival)"
+  putStrLn "\n(Exemplo: L1 para LollaPalluisa - Dia 1)\n"
+  putStr "> "
+  hFlush stdout
+  diaDoFestival <- getLine
+  let path = "app/database/diasDeFestival/" ++ diaDoFestival ++ ".txt"
+  file <- openFile path ReadMode
+  diaDoFestivalInfo <- hGetContents file
+  putStrLn diaDoFestivalInfo
+  menuPrincipalPrompt
+
+comandaMenu :: IO ()
+comandaMenu = do
+  putStrLn "\n Escolha uma opção:\n"
+  putStrLn "(1) - Comprar Items"
+  putStrLn "(2) - Extrato\n"
+  putStr "> "
+  hFlush stdout
+  input <- getLine
+  if (input == "1")
+    then do (print "função de compra")
+    else do (print "função de listar items")
+
+checkValidIngressoId :: String -> Bool
+checkValidIngressoId id = id `elem` ["1", "2", "3", "4", "5", "6"]
 
 checkValidCpf :: String -> Bool
 checkValidCpf cpf = checkValidCpfSize cpf && checkIfElementsAreNumbers cpf
@@ -163,6 +244,11 @@ invalidOptionInput f = do
   putStrLn "\nInput incorreto!"
   f
 
+invalidId :: IO () -> IO ()
+invalidId f = do
+  putStrLn "\nID incorreto!"
+  f
+
 writeDB :: String -> String -> String -> IO ()
 writeDB cpf senha path = do
   let finalPath = "app/database/" ++ path ++ "/" ++ cpf ++ ".txt"
@@ -171,5 +257,13 @@ writeDB cpf senha path = do
 saveCurrentUser :: String -> IO ()
 saveCurrentUser cpf = do
   let finalPath = "app/database/currentUser.txt"
-  writeFile cpf
+  writeFile finalPath cpf
 
+removeCarriageReturn :: String -> String
+removeCarriageReturn str = [ch | ch <- str, ch /= '\n']
+
+addUnderscore :: String -> String
+addUnderscore "" = ""
+addUnderscore (x : xs)
+  | x == ' ' = '_' : addUnderscore xs
+  | otherwise = x : addUnderscore xs
