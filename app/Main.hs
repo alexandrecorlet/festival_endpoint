@@ -6,6 +6,8 @@ import System.Exit
 import System.IO
 import Text.ParserCombinators.ReadP (choice)
 
+import Utils
+
 main :: IO ()
 main = do
   setLocaleEncoding utf8
@@ -173,7 +175,7 @@ consultarAtracao = do
   putStr "> "
   hFlush stdout
   atracao <- getLine
-  let formatedAtracao = addUnderscore atracao
+  let formatedAtracao = replaceSpaceWithUnderscore atracao
   let path = "app/database/atracoes/" ++ formatedAtracao ++ ".txt"
   file <- openFile path ReadMode
   att <- hGetContents file
@@ -231,104 +233,3 @@ comandaMenu = do
       getComanda
       menuPrincipalPrompt
 
-checkValidIngressoId :: String -> Bool
-checkValidIngressoId id = id `elem` ["L1", "L2", "L3", "R1", "R2", "R3"]
-
-checkValidCpf :: String -> Bool
-checkValidCpf cpf = checkValidCpfSize cpf && checkIfElementsAreNumbers cpf
-
-checkValidCpfSize :: String -> Bool
-checkValidCpfSize cpf
-  | let size = length cpf, size == 11 = True
-  | otherwise = False
-
-checkIfElementsAreNumbers :: String -> Bool
-checkIfElementsAreNumbers "" = True
-checkIfElementsAreNumbers (x : xs)
-  | x `elem` ['0' .. '9'] = checkIfElementsAreNumbers xs
-  | otherwise = False
-
-checkValidSenha :: String -> Bool
-checkValidSenha senha
-  | let size = length senha, size > 5 = True
-  | otherwise = False
-
--- | Prompt user
-invalidOption :: String -> IO () -> IO ()
-invalidOption msg f = do
-  putStrLn "\nOPCAO INVALIDA!"
-  f
-
--- | Prompt user
-invalidOptionInput :: IO () -> IO ()
-invalidOptionInput f = do
-  putStrLn "\nInput incorreto!"
-  f
-
-invalidId :: IO () -> IO ()
-invalidId f = do
-  putStrLn "\nID incorreto!"
-  f
-
-writeDB :: String -> String -> String -> IO ()
-writeDB cpf senha path = do
-  let finalPath = "app/database/" ++ path ++ "/" ++ cpf ++ ".txt"
-  writeFile finalPath senha
-
-saveCurrentUser :: String -> IO ()
-saveCurrentUser cpf = do
-  let finalPath = "app/database/currentUser.txt"
-  writeFile finalPath cpf
-
-removeCarriageReturn :: String -> String
-removeCarriageReturn str = [ch | ch <- str, ch /= '\n']
-
-addUnderscore :: String -> String
-addUnderscore "" = ""
-addUnderscore (x : xs)
-  | x == ' ' = '_' : addUnderscore xs
-  | otherwise = x : addUnderscore xs
-
-getComanda :: IO ()
-getComanda = do
-  cpf <- readFile "app/database/currentUser.txt"
-  let valorComandaPath = "app/database/valorComanda/" ++ cpf ++ ".txt"
-  let comandaPath = "app/database/comanda/" ++ cpf ++ ".txt"
-  valorComanda <- readFile valorComandaPath
-  comanda <- readFile comandaPath
-
-  putStrLn ("Valor total: " ++ valorComanda ++ "\n" ++ comanda)
-
-adicionarCompra :: String -> String -> IO ()
-adicionarCompra itemId qntd = do
-  cpf <- readFile "app/database/currentUser.txt"
-  let itemPath = "app/database/itens/" ++ itemId ++ ".txt"
-  let comandaPath = "app/database/comanda/" ++ cpf ++ ".txt"
-  let valorComandaPath = "app/database/valorComanda/" ++ cpf ++ ".txt"
-
-  item <- readFile itemPath
-
-  valorComandaFile <- openFile valorComandaPath ReadWriteMode
-  valorComanda <- hGetContents valorComandaFile
-
-  -- funcao que le ultima linha do arquivo -int
-  let descricaoArray = map ((!!) (lines item)) [(length (lines item) -2)]
-  let valorItemArray = map ((!!) (lines item)) [(length (lines item) -1)]
-  let descricao = head descricaoArray
-
-  let valorItem = head valorItemArray
-
-  let qntdInt = read qntd :: Integer
-  let valorComandaInt = read valorComanda :: Integer
-  let valorItemInt = read valorItem :: Integer
-
-  let newComanda = descricao ++ " - " ++ qntd ++ "\n"
-  let newValorComanda = valorComandaInt + (qntdInt * valorItemInt)
-
-  let newValorComandaString = show newValorComanda
-
-  --seq fecha o arquivo aberto para poder sobesscrever em paz
-  putStrLn ("Seu total agora é de " ++ newValorComandaString ++ "R$")
-  valorComanda `seq` hClose valorComandaFile
-  writeFile valorComandaPath newValorComandaString
-  appendFile comandaPath newComanda
