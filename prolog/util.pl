@@ -1,28 +1,28 @@
-:- module(util, [getDadosConta/2, validarLogin/2]).
+- module(util, [login/2, isValidLogin/2]).
 
-getDadosConta(Cpf, Senha):-
+login(Cpf, Senha):-
   write('Digite seu CPF (apenas números)'), 
   read(Cpf),
   write('Digite sua senha (no mínimo 6 caractéres) '), 
   read(Senha).
 
-validarLogin(Cpf, Senha):- 
-  validarCpf(Cpf),
-  validarSenha(Senha). 
+isValidLogin(Cpf, Senha):- 
+  isValidCpf(Cpf),
+  isValidSenha(Senha). 
 
-validarSenha(Senha):-
+isValidSenha(Senha):-
   atom_chars(Senha, List),
   length(List, Length),
   Length > 5. 
 
-validarCpf(Cpf):-
+isValidCpf(Cpf):-
   atom_chars(Cpf, List),
   length(List, Length),
   Length =:= 11, 
-  validarCaracteresDoCpf(List). 
+  checkCaracteresDoCpf(List). 
 
-validarCaracteresDoCpf([H | []]):- char_type(H, digit). 
-validarCaracteresDoCpf([H | T]):- 
+checkCaracteresDoCpf([H | []]):- char_type(H, digit). 
+checkCaracteresDoCpf([H | T]):- 
   char_type(H, digit), 
-  validarCaracteresDoCpf(T).
-  
+  checkCaracteresDoCpf(T).
+
