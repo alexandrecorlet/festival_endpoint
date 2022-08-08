@@ -1,10 +1,12 @@
-- module(util, [login/2, isValidLogin/2]).
+- module(util, [login/2, isValidLogin/2, catalogoItensCompletos/2, catalogoItensIncompletos/2, leString/2]).
+
+leString(S):- read_line_to_string(user_input, S).
 
 login(Cpf, Senha):-
   write('Digite seu CPF (apenas números)'), 
-  read(Cpf),
+  leString(Cpf),
   write('Digite sua senha (no mínimo 6 caractéres) '), 
-  read(Senha).
+  leString(Senha).
 
 isValidLogin(Cpf, Senha):- 
   isValidCpf(Cpf),
@@ -26,3 +28,4 @@ checkCaracteresDoCpf([H | T]):-
   char_type(H, digit), 
   checkCaracteresDoCpf(T).
 
+ingressoValido(X):- member(X, ["L1", "L2", "L3", "R1", "R2", "R3"]).
