@@ -13,10 +13,18 @@ menuBoasVindasHandler():-
   nl,
   read(I),
   (I is 1 -> write('TODO'), nl;                              % menu login 
-  I is 2 -> write('TODO'), nl;                              % menu criar conta
+  I is 2 -> write('TODO'), nl;                               % menu criar conta
   I is 3 -> abort;
   write('OPÇÃO INVÁLIDA!'), nl,                              % opcao invalida
   menuBoasVindasHandler).
+
+menuComprarIngresso:-
+  nl,
+  write('Qual o id do dia do festival?'), nl,
+  leString(Id),
+  (ingressoValido(Id) -> write('TODO'), nl;
+  write('ID incorreto!'), nl,
+  write('Chamar menu principal prompt'), nl).               % TODO:call menuPrincipalPrompt
 
 main:-
   menuBoasVindasHandler().
