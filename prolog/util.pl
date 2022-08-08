@@ -3,9 +3,9 @@
 leString(S):- read_line_to_string(user_input, S).
 
 login(Cpf, Senha):-
-  write('Digite seu CPF (apenas números)'), 
+  write('Digite seu CPF (apenas números): '), 
   leString(Cpf),
-  write('Digite sua senha (no mínimo 6 caractéres) '), 
+  write('Digite sua senha (no mínimo 6 caractéres): '), 
   leString(Senha).
 
 isValidLogin(Cpf, Senha):- 
