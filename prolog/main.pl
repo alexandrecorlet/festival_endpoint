@@ -11,12 +11,26 @@ menuBoasVindas():-
 menuBoasVindasHandler():-
   menuBoasVindas(),
   nl,
-  read(I),
-  (I is 1 -> write('TODO'), nl;                              % menu login 
-  I is 2 -> write('TODO'), nl;                               % menu criar conta
-  I is 3 -> abort;
-  write('OPÇÃO INVÁLIDA!'), nl,                              % opcao invalida
+  leString(I), 
+  (I =:= "1" -> write('TODO'), nl;                               % menu login 
+  I =:= "2" -> menuCriarConta, nl;                               % menu criar conta
+  I =:= "3" -> abort;                                            % encerra execucao
+  write('OPÇÃO INVÁLIDA!'), nl,                                  % opcao invalida
   menuBoasVindasHandler).
+
+menuCriarConta:-
+  nl,
+  login(Cpf, Senha),
+  write('Você é maior de idade (S/N)? '),
+  leString(Resp),
+
+  % if
+  (isValidLogin(Cpf, Senha)
+    -> nl, write('CONTA CRIADA!'), nl;                       % TODO: REGISTRAR USER NO DB
+
+  % else
+  write('LOGIN INVÁLIDO!'), nl,
+  menuCriarConta).
 
 menuComprarIngresso:-
   nl,
@@ -24,7 +38,7 @@ menuComprarIngresso:-
   leString(Id),
   (ingressoValido(Id) -> write('TODO'), nl;
   write('ID incorreto!'), nl,
-  write('Chamar menu principal prompt'), nl).               % TODO:call menuPrincipalPrompt
+  write('Chamar menu principal prompt'), nl). 
 
 main:-
   menuBoasVindasHandler().
