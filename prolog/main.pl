@@ -34,9 +34,10 @@ menuCriarConta:-
 
 menuComprarIngresso:-
   nl,
+  printIdDiasDoFestival,
   write('Qual o id do dia do festival?'), nl,
   leString(Id),
-  (ingressoValido(Id) -> write('TODO'), nl;
+  (isValidFestivalId(Id) -> write('TODO'), nl;
   write('ID incorreto!'), nl,
   write('Chamar menu principal prompt'), nl). 
 
