@@ -56,5 +56,15 @@ consultarAtracaoFestival:-
   write('INFO DA atração'), nl,
   write('Chamar menu principal prompt').
 
+consultarDiaDoFestival:-
+  nl,
+  printIdDiasDoFestival,
+  write('Digite o id do dia do festival que deseja consultar: '), 
+  nl,
+  leString(Id),
+  (isValidFestivalId(Id) -> write('TODO'), nl;
+  write('ID incorreto!'), nl,
+  write('Chamar menu principal prompt'), nl).
+
 main:-
   menuBoasVindasHandler().
