@@ -66,5 +66,30 @@ consultarDiaDoFestival:-
   write('ID incorreto!'), nl,
   write('Chamar menu principal prompt'), nl).
 
+comandaOnlineMenu:-
+  nl,
+  printMenuComandaOnline,
+  write('Digite uma opção: '),
+  leString(Opcao),
+
+  (Opcao =:= "1" ->
+    % OPCAO 1
+    %TODO: VERIFICAR SE O USER EH MAIOR DE IDADE
+    %printProdutosMenoridade,
+    nl,
+    printProdutosMaioridade;
+  Opcao =:= "2" ->
+    % OPCAO 2 
+    %TODO: BUSCAR O EXTRATO DO USER NO EM SEU RESPECTIVO .TXT
+    nl,
+    write('TODO');
+  Opcao =:= "3" ->
+    % OPCAO 3
+    write('Chamar menu principal prompt');
+
+  % ELSE
+  write('OPÇÃO INVÁLIDA!'), nl, 
+  write('Chamar menu principal prompt')).
+
 main:-
   menuBoasVindasHandler().
