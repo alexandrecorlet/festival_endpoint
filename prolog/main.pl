@@ -40,5 +40,10 @@ menuComprarIngresso:-
   write('ID incorreto!'), nl,
   write('Chamar menu principal prompt'), nl). 
 
+listarAtracoesFestival:-
+  % TODO: LER ATRACOES DO .TXT
+  write('ATRACOES'), nl,
+  write('chamar menu principal prompt').
+
 main:-
   menuBoasVindasHandler().
