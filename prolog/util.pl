@@ -28,20 +28,20 @@ checkCaracteresDoCpf([H | T]):-
   char_type(H, digit), 
   checkCaracteresDoCpf(T).
 
-ingressoValido(X):- member(X, ["L1", "L2", "L3", "R1", "R2", "R3"]).
+isValidFestivalId(X):- member(X, ["L1", "L2", "L3", "R1", "R2", "R3"]).
 
 formatarAtracao(A, Result):- 
   split_string(A, " ", "", List),
   atomics_to_string(List, "_", Result).
 
-printDiasDoFestival:-
-  write('* Dias do LolaPalluisa:'), nl,
-  write('  * L1'), nl, 
-  write('  * L2'), nl, 
-  write('  * L3'), nl, 
+printIdDiasDoFestival:-
+  write('* Id dos dias do LolaPalluisa:'), nl,
+  write('  (L1) Dia 1'), nl, 
+  write('  (L2) Dia 2'), nl, 
+  write('  (L3) Dia 3'), nl, 
   nl,
-  write('* Dias do Rocha no River:'), nl,
-  write('  * R1'), nl,
-  write('  * R2'), nl,
-  write('  * R3'), nl,
+  write('* Id dos dias do Rocha no River:'), nl,
+  write('  (R1) Dia 1'), nl,
+  write('  (R2) Dia 2'), nl,
+  write('  (R3) Dia 3'), nl,
   nl.
