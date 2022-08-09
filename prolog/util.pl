@@ -29,3 +29,7 @@ checkCaracteresDoCpf([H | T]):-
   checkCaracteresDoCpf(T).
 
 ingressoValido(X):- member(X, ["L1", "L2", "L3", "R1", "R2", "R3"]).
+
+formatarAtracao(A, Result):- 
+  split_string(A, " ", "", List),
+  atomics_to_string(List, "_", Result).
