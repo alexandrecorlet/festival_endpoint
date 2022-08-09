@@ -45,5 +45,15 @@ listarAtracoesFestival:-
   write('ATRACOES'), nl,
   write('chamar menu principal prompt').
 
+consultarAtracaoFestival:-
+  nl,
+  write('Digite o nome da atração: '),
+  leString(A),
+  formatarAtracao(A, AtracaoFormatada),
+  %TODO: CRIAR PATH PARA .TXT DA ATRACAO FORMATADA.
+  %TODO: LER .TXT
+  write('INFO DA atração'), nl,
+  write('Chamar menu principal prompt').
+
 main:-
   menuBoasVindasHandler().
