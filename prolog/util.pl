@@ -1,14 +1,14 @@
-- module(util, [login/2, isValidLogin/2, catalogoItensCompletos/2, catalogoItensIncompletos/2, leString/2]).
+- module(util, [checkCpfAndSenha/2, isValidCpfAndSenha/2, catalogoItensCompletos/2, catalogoItensIncompletos/2, leString/2]).
 
 leString(S):- read_line_to_string(user_input, S).
 
-login(Cpf, Senha):-
+checkCpfAndSenha(Cpf, Senha):-
   write('Digite seu CPF (apenas números): '), 
   leString(Cpf),
   write('Digite sua senha (no mínimo 6 caractéres): '), 
   leString(Senha).
 
-isValidLogin(Cpf, Senha):- 
+isValidCpfAndSenha(Cpf, Senha):- 
   isValidCpf(Cpf),
   isValidSenha(Senha). 
 
@@ -65,4 +65,13 @@ printProdutosMaioridade:-
   write('(6) Cachaça 100ml - 35R$'), nl,
   write('(7) Pitu 100ml - 70R$'), nl,
   write('(8) Pinga 95ml - 80R$'), nl.
+
+printMenuPrincipal:-
+  write('(1) Comprar Ingresso'), nl,
+  write('(2) Listar Atrações do Festival'), nl,
+  write('(3) Comanda Online'), nl,
+  write('(4) Consultar Atração'), nl,
+  write('(5) Consultar Dia de Festival'), nl,
+  write('(6) Consultar Atrações por Data'), nl,
+  write('(7) Sair'), nl.
 
