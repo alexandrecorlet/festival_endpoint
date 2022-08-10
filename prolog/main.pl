@@ -12,7 +12,7 @@ menuBoasVindasHandler():-
   menuBoasVindas(),
   nl,
   leString(I), 
-  (I =:= "1" -> write('TODO'), nl;                               % menu login 
+  (I =:= "1" -> menuLogin, nl;                               % menu login 
   I =:= "2" -> menuCriarConta, nl;                               % menu criar conta
   I =:= "3" -> abort;                                            % encerra execucao
   write('OPÇÃO INVÁLIDA!'), nl,                                  % opcao invalida
@@ -20,17 +20,28 @@ menuBoasVindasHandler():-
 
 menuCriarConta:-
   nl,
-  login(Cpf, Senha),
+  checkCpfAndSenha(Cpf, Senha),
   write('Você é maior de idade (S/N)? '),
   leString(Resp),
 
   % if
-  (isValidLogin(Cpf, Senha)
-    -> nl, write('CONTA CRIADA!'), nl;                       % TODO: REGISTRAR USER NO DB
+  (isValidCpfAndSenha(Cpf, Senha)
+    -> nl, write('CONTA CRIADA!'), nl, menuPrincpalHandler;                       % TODO: REGISTRAR USER NO DB
 
   % else
-  write('LOGIN INVÁLIDO!'), nl,
+  write('CAMPOS INVÁLIDO!'), nl,
   menuCriarConta).
+
+menuLogin:-
+  nl,
+  checkCpfAndSenha(Cpf, Senha),
+  % if
+  (isValidCpfAndSenha(Cpf, Senha)
+    -> nl, write('LOGIN REALIZADO COM SUCESSO!'), nl, menuPrincpalHandler;                       % TODO: REGISTRAR USER NO DB
+
+  % else
+  write('CAMPOS INVÁLIDO!'), nl,
+  menuLogin).
 
 menuComprarIngresso:-
   nl,
@@ -91,5 +102,34 @@ comandaOnlineMenu:-
   write('OPÇÃO INVÁLIDA!'), nl, 
   write('Chamar menu principal prompt')).
 
+menuPrincpalHandler:-
+  nl,
+  printMenuPrincipal, nl,
+  write('Digite uma opção: '), nl,
+  leString(Opcao),
+
+  (Opcao =:= "1" ->
+  menuComprarIngresso;
+
+  Opcao =:= "2" ->
+  listarAtracoesFestival;
+
+  Opcao =:= "3" ->
+  comandaOnlineMenu;
+
+  Opcao =:= "4" ->
+  consultarAtracaoFestival;
+
+  Opcao =:= "5" ->
+  consultarDiaDoFestival;
+
+  Opcao =:= "6" ->
+  write('TODO'), nl, menuPrincpalHandler;
+
+
+  Opcao =:= "7" ->
+  abort).
+
 main:-
   menuBoasVindasHandler().
+
