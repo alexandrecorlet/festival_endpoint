@@ -1,0 +1,3 @@
+
+:- dynamic cliente/3.
+

@@ -1,4 +1,15 @@
 :- ['./util.pl'].
+:- include('./cliente.pl').
+
+
+setup_bd_cliente :-
+	consult('./data/bd_clientes.pl').
+
+setup_bd_festival :-
+	consult('./data/bd_festival.pl').
+
+setup_bd_atracoes :-
+	consult('./data/bd_atracoes.pl').
 
 menuBoasVindas():-
   nl,
@@ -19,25 +30,48 @@ menuBoasVindasHandler():-
   menuBoasVindasHandler).
 
 menuCriarConta:-
+  setup_bd_cliente,
   nl,
+
   checkCpfAndSenha(Cpf, Senha),
   write('Você é maior de idade (S/N)? '),
   leString(Resp),
 
+
+
   % if
   (isValidCpfAndSenha(Cpf, Senha)
-    -> nl, write('CONTA CRIADA!'), nl, menuPrincpalHandler;                       % TODO: REGISTRAR USER NO DB
+    ->
+    (get_cpfs_clientes(Cpfs), member(Cpf, Cpfs) -> nl, writeln("Cpf já cadastrado."), nl,menuCriarConta;
+	assertz(cliente(Cpf, Senha, Resp)),
+	adicionaCliente,
+	writeln("Cliente cadastrado com sucesso!"),nl),
+     nl, write('CONTA CRIADA!'), nl, menuPrincpalHandler;                       % TODO: REGISTRAR USER NO DB
 
   % else
   write('CAMPOS INVÁLIDO!'), nl,
   menuCriarConta).
+
+get_cpfs_clientes(Cpfs) :- 
+	findall(Cpf, cliente(Cpf,_,_), Cpfs).
+
+arquivo_vazio :-
+	\+(predicate_property(cliente(_,_,_), dynamic)).
+
+adicionaCliente :-
+	setup_bd_cliente,
+	tell('./data/bd_clientes.pl'), nl,
+	listing(cliente/3),
+	told.
 
 menuLogin:-
   nl,
   checkCpfAndSenha(Cpf, Senha),
   % if
   (isValidCpfAndSenha(Cpf, Senha)
-    -> nl, write('LOGIN REALIZADO COM SUCESSO!'), nl, menuPrincpalHandler;                       % TODO: REGISTRAR USER NO DB
+    ->
+    (login_cliente(Cpf, Senha) ->  menuPrincpalHandler); 
+    nl, write('LOGIN REALIZADO COM SUCESSO!'), nl, menuPrincpalHandler;                       % TODO: REGISTRAR USER NO DB
 
   % else
   write('CAMPOS INVÁLIDO!'), nl,
@@ -53,27 +87,54 @@ menuComprarIngresso:-
   write('Chamar menu principal prompt'), nl). 
 
 listarAtracoesFestival:-
-  % TODO: LER ATRACOES DO .TXT
-  write('ATRACOES'), nl,
-  write('chamar menu principal prompt').
+
+	setup_bd_festival,
+	findall((N,M,O), festival(N, M, O), ListaClientes),
+	writeln("Usuários cadastrados: "),
+	exibeClientes(ListaClientes),
+	told, nl,
+	fimListagemClientes.
+
+fimListagemClientes:-
+	writeln("Clique em enter para continuar: "),
+	read_line_to_string(user_input, _).
+
+exibeClientes([]) :-
+	nl,
+	writeln("Nenhum usuário cadastrado.").
+
+exibeClientes([H]) :-
+	write("- "),
+	writeln(H).
+
+exibeClientes([H|T]) :-
+	write("- "),
+	writeln(H),
+	exibeClientes(T).
 
 consultarAtracaoFestival:-
+  setup_bd_atracoes,
   nl,
   write('Digite o nome da atração: '),
-  leString(A),
-  formatarAtracao(A, AtracaoFormatada),
-  %TODO: CRIAR PATH PARA .TXT DA ATRACAO FORMATADA.
-  %TODO: LER .TXT
+  leString(Nome),
+  %formatarAtracao(Nome, AtracaoFormatada),
   write('INFO DA atração'), nl,
+  (get_cpfs_clientes(Nomes), member(Nome, Nomes) -> nl, writeln("Atracao nao encontrada."), nl,menuCriarConta;
+	findall((Palco, Horario,Nome,Genero), atracao(Palco, Horario, Nome, Genero), Atracao),
+  exibeClientes(Atracao),nl),
   write('Chamar menu principal prompt').
 
 consultarDiaDoFestival:-
+  setup_bd_festival,
   nl,
-  printIdDiasDoFestival,
+  %printIdDiasDoFestival,
   write('Digite o id do dia do festival que deseja consultar: '), 
   nl,
-  leString(Id),
-  (isValidFestivalId(Id) -> write('TODO'), nl;
+  leString(Dia),
+  (isValidFestivalId(Dia) ->   (get_cpfs_clientes(Dias), member(Dia, Dias) -> nl, writeln("Dia nao encontrado."), nl,menuCriarConta;
+	findall((Palco, Horario,Nome,Genero), festival(Palco, Horario, Nome, Genero), Festival),
+  exibeClientes(Festival),nl),
+  write('Chamar menu principal prompt');
   write('ID incorreto!'), nl,
   write('Chamar menu principal prompt'), nl).
 
@@ -86,9 +147,11 @@ comandaOnlineMenu:-
   (Opcao =:= "1" ->
     % OPCAO 1
     %TODO: VERIFICAR SE O USER EH MAIOR DE IDADE
-    %printProdutosMenoridade,
+    write('Voce tem mais de 18 anos? (S/N): '),
+    leString(Resp),
+    printProdutosMenoridade,
     nl,
-    printProdutosMaioridade;
+    maiorIdade(Resp, "S") -> printProdutosMaioridade;
   Opcao =:= "2" ->
     % OPCAO 2 
     %TODO: BUSCAR O EXTRATO DO USER NO EM SEU RESPECTIVO .TXT
@@ -132,4 +195,3 @@ menuPrincpalHandler:-
 
 main:-
   menuBoasVindasHandler().
-

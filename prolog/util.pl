@@ -56,15 +56,14 @@ printProdutosMenoridade:-
   write('(0) Coxinha de Frango 300g - 20R$'), nl,
   write('(1) Água 300ml - 11R$'), nl,
   write('(2) Refrigerante 300ml - 11R$'), nl,
-  write('(3) Boné do festival - 100R$'), nl,
+  write('(3) Crepe - 100R$'), nl,
   write('(4) Pizza de calabresa 300g - 20R$'), nl.
 
 printProdutosMaioridade:-
   printProdutosMenoridade,
-  write('(5) Cerveja 300ml - 10R$'), nl,
-  write('(6) Cachaça 100ml - 35R$'), nl,
-  write('(7) Pitu 100ml - 70R$'), nl,
-  write('(8) Pinga 95ml - 80R$'), nl.
+  write('(5) Vodka 300ml - 10R$'), nl,
+  write('(6) Gin 100ml - 35R$'), nl,
+  write('(7) Cerveja 300ml - 70R$'), nl.
 
 printMenuPrincipal:-
   write('(1) Comprar Ingresso'), nl,
