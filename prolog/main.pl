@@ -40,8 +40,6 @@ menuCriarConta:-
   write('Você é maior de idade (S/N)? '),
   leString(Resp),
 
-
-
   % if
   (isValidCpfAndSenha(Cpf, Senha)
     ->
@@ -50,7 +48,7 @@ menuCriarConta:-
 	adicionaCliente,
 	writeln("Cliente cadastrado com sucesso!"),nl),
      nl, write('CONTA CRIADA!'), nl, 
-     menuPrincpalHandler;                       
+     menuPrincpalHandler(Cpf);                       
 
   % else
   write('CAMPOS INVÁLIDO!'), nl,
@@ -77,32 +75,34 @@ adicionaCliente :-
 menuLogin:-
   nl,
   checkCpfAndSenha(Cpf, Senha),
+
   % if
   (isValidCpfAndSenha(Cpf, Senha)
     ->
-    (login_cliente(Cpf, Senha) ->  menuPrincpalHandler), 
+    (login_cliente(Cpf, Senha) -> 
     nl, write('LOGIN REALIZADO COM SUCESSO!'), 
-    nl, menuPrincpalHandler;                     
+    nl, menuPrincpalHandler(Cpf);                     
 
   % else
   nl,
   write('CAMPOS INVÁLIDO!'), nl, menuLogin).
 
-menuComprarIngresso:-
+menuComprarIngresso(Cpf):-
+ write(Cpf), nl, nl
   nl,
   printIdDiasDoFestival,
   write('Qual o id do dia do festival?'), nl,
   leString(Id),
 
-  (isValidFestivalId(Id) -> assertz(ingresso("cpf", Id)),                              % CPF e Id do FESTIVAL
+  (isValidFestivalId(Id) -> assertz(ingresso(Cpf, Id)),                              % CPF e Id do FESTIVAL
   adicionaIngresso, 
   nl,
   writeln('Ingresso comprado!'), nl,
-  menuPrincpalHandler;
+  menuPrincpalHandler(Cpf);
   	
   nl,
   writeln('ID incorreto!'), nl,
-  menuPrincpalHandler). 
+  menuPrincpalHandler(Cpf)). 
 
 listarAtracoesFestival:-
 
@@ -111,7 +111,7 @@ listarAtracoesFestival:-
 	writeln("Festivais cadastrados: "),
 	exibeClientes(ListaFestivais),
 	told, 
-  menuPrincpalHandler.
+  menuPrincpalHandler(Cpf).
 
 fimListagemClientes:-
 	writeln("Clique em enter para continuar: "),
@@ -140,7 +140,7 @@ consultarAtracaoFestival:-
   (get_cpfs_clientes(Nomes), member(Nome, Nomes) -> nl, writeln("Atracao nao encontrada."), nl,menuCriarConta;
 	findall((Palco, Horario,Nome,Genero), atracao(Palco, Horario, Nome, Genero), Atracao),
   exibeClientes(Atracao),nl),
-  menuPrincpalHandler.
+  menuPrincpalHandler(Cpf).
 
 consultarDiaDoFestival:-
   setup_bd_festival,
@@ -149,12 +149,12 @@ consultarDiaDoFestival:-
   write('Digite o id do dia do festival que deseja consultar: '), 
   nl,
   leString(Dia),
-  (get_cpfs_clientes(Dias), member(Dia, Dias) -> nl, writeln("Nada foi encontrado"), nl,menuPrincpalHandler;
+  (get_cpfs_clientes(Dias), member(Dia, Dias) -> nl, writeln("Nada foi encontrado"), nl,menuPrincpalHandler(Cpf);
 	findall((A, B,C,Dia), festival(A, B, C, Dia), Festival),
   exibeClientes(Festival),nl),
-  menuPrincpalHandler.
+  menuPrincpalHandler(Cpf).
   
-comandaOnlineMenu:-
+comandaOnlineMenu(Cpf):-
   nl,
   printMenuComandaOnline,
   write('Digite uma opção: '),
@@ -163,10 +163,7 @@ comandaOnlineMenu:-
   (Opcao =:= "1" ->
     % OPCAO 1
     %TODO: VERIFICAR SE O USER EH MAIOR DE IDADE
-    write('Voce tem mais de 18 anos? (S/N): '),
-    leString(Resp),
-    printProdutosMenoridade,
-    nl,
+    printProdutosMenoridade, nl,
     maiorIdade(Resp, "S") -> printProdutosMaioridade;
   Opcao =:= "2" ->
     % OPCAO 2 
@@ -175,11 +172,11 @@ comandaOnlineMenu:-
     write('TODO');
   Opcao =:= "3" ->
     % OPCAO 3
-    menuPrincpalHandler;
+    menuPrincpalHandler(Cpf);
 
   % ELSE
   write('OPÇÃO INVÁLIDA!'), nl, 
-  write('Chamar menu principal prompt')).
+  MenuPrincipalHandler(Cpf)).
 
 consultarAtracaoPorData:-
   setup_bd_festival, nl,
@@ -187,25 +184,25 @@ consultarAtracaoPorData:-
   leString(Data),
   nl,
   write('Atraçoes no dia'), nl,
-  (get_cpfs_clientes(Datas), member(Data, Datas) -> nl, writeln("Nada foi encontrado"), nl,menuPrincpalHandler;
+  (get_cpfs_clientes(Datas), member(Data, Datas) -> nl, writeln("Nada foi encontrado"), nl,menuPrincpalHandler(Cpf);
 	findall((A, B,Data,C), festival(A, B, Data, C), Festival),
   exibeClientes(Festival),nl),
-  menuPrincpalHandler.
+  menuPrincpalHandler(Cpf).
 
-menuPrincpalHandler:-
+menuPrincpalHandler(Cpf):-
   nl,
   printMenuPrincipal, nl,
   write('Digite uma opção: '), nl,
   leString(Opcao),
 
   (Opcao =:= "1" ->
-  menuComprarIngresso;
+  menuComprarIngresso(Cpf);
 
   Opcao =:= "2" ->
   listarAtracoesFestival;
 
   Opcao =:= "3" ->
-  comandaOnlineMenu;
+  comandaOnlineMenu(Cpf);
 
   Opcao =:= "4" ->
   consultarAtracaoFestival;
