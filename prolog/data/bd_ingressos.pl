@@ -1,6 +1,8 @@
 
 :- dynamic ingresso/2.
 
+ingresso("cpf", "L1").
+ingresso("cpf", "L1").
 ingresso("cu", "L1").
 ingresso("cu", "L1").
 ingresso("cu", "L1").

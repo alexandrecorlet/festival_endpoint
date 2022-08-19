@@ -79,12 +79,12 @@ menuLogin:-
   % if
   (isValidCpfAndSenha(Cpf, Senha)
     ->
-    (login_cliente(Cpf, Senha) ->  menuPrincpalHandler); 
+    (login_cliente(Cpf, Senha) ->  menuPrincpalHandler), 
     nl, write('LOGIN REALIZADO COM SUCESSO!'), nl, menuPrincpalHandler;                       % TODO: REGISTRAR USER NO DB
 
   % else
-  write('CAMPOS INVÁLIDO!'), nl,
-  menuLogin).
+  nl,
+  write('CAMPOS INVÁLIDO!'), nl, menuLogin).
 
 menuComprarIngresso:-
   nl,
@@ -105,9 +105,9 @@ menuComprarIngresso:-
 listarAtracoesFestival:-
 
 	setup_bd_festival,
-	findall((N,M,O), festival(N, M, O), ListaClientes), nl,
+	findall((N,M,O,C), festival(N, M, O,C), ListaFestivais), nl,
 	writeln("Festivais cadastrados: "),
-	exibeClientes(ListaClientes),
+	exibeClientes(ListaFestivais),
 	told, 
   menuPrincpalHandler.
 
@@ -117,7 +117,7 @@ fimListagemClientes:-
 
 exibeClientes([]) :-
 	nl,
-	writeln("Nenhum usuário cadastrado.").
+	writeln("Nada encontrado.").
 
 exibeClientes([H]) :-
 	write("- "),
@@ -147,13 +147,11 @@ consultarDiaDoFestival:-
   write('Digite o id do dia do festival que deseja consultar: '), 
   nl,
   leString(Dia),
-  (isValidFestivalId(Dia) ->   (get_cpfs_clientes(Dias), member(Dia, Dias) -> nl, writeln("Dia nao encontrado."), nl,menuCriarConta;
-	findall((Palco, Horario,Nome,Genero), festival(Palco, Horario, Nome, Genero), Festival),
+  (get_cpfs_clientes(Dias), member(Dia, Dias) -> nl, writeln("Nada foi encontrado"), nl,menuPrincpalHandler;
+	findall((A, B,C,Dia), festival(A, B, C, Dia), Festival),
   exibeClientes(Festival),nl),
-  write('Chamar menu principal prompt');
-  write('ID incorreto!'), nl,
-  write('Chamar menu principal prompt'), nl).
-
+  menuPrincpalHandler.
+  
 comandaOnlineMenu:-
   nl,
   printMenuComandaOnline,
@@ -181,6 +179,17 @@ comandaOnlineMenu:-
   write('OPÇÃO INVÁLIDA!'), nl, 
   write('Chamar menu principal prompt')).
 
+consultarAtracaoPorData:-
+  setup_bd_festival, nl,
+  write('Digite a data'), nl,
+  leString(Data),
+  nl,
+  write('Atraçoes no dia'), nl,
+  (get_cpfs_clientes(Datas), member(Data, Datas) -> nl, writeln("Nada foi encontrado"), nl,menuPrincpalHandler;
+	findall((A, B,Data,C), festival(A, B, Data, C), Festival),
+  exibeClientes(Festival),nl),
+  menuPrincpalHandler.
+
 menuPrincpalHandler:-
   nl,
   printMenuPrincipal, nl,
@@ -203,7 +212,8 @@ menuPrincpalHandler:-
   consultarDiaDoFestival;
 
   Opcao =:= "6" ->
-  write('TODO'), nl, menuPrincpalHandler;
+  consultarAtracaoPorData;
+  % write('TODO'), nl, menuPrincpalHandler;
 
 
   Opcao =:= "7" ->
