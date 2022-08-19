@@ -11,6 +11,9 @@ setup_bd_festival :-
 setup_bd_atracoes :-
 	consult('./data/bd_atracoes.pl').
 
+setup_bd_ingressos :- 
+  consult('./data/bd_ingressos.pl').
+
 menuBoasVindas():-
   nl,
   print('Seja bem-vindo ao Festival Endpoint!'), nl,
@@ -58,6 +61,12 @@ get_cpfs_clientes(Cpfs) :-
 arquivo_vazio :-
 	\+(predicate_property(cliente(_,_,_), dynamic)).
 
+adicionaIngresso :-
+  setup_bd_ingressos,
+  tell('./data/bd_ingressos.pl'), nl,
+  listing(ingresso/2),
+  told.
+
 adicionaCliente :-
 	setup_bd_cliente,
 	tell('./data/bd_clientes.pl'), nl,
@@ -82,18 +91,24 @@ menuComprarIngresso:-
   printIdDiasDoFestival,
   write('Qual o id do dia do festival?'), nl,
   leString(Id),
-  (isValidFestivalId(Id) -> write('TODO'), nl;
+
+  (isValidFestivalId(Id) -> assertz(ingresso("cu", Id)),
+  adicionaIngresso, nl,
+  write('Ingresso comprado!'), nl,
+  menuPrincpalHandler;
+  	
   write('ID incorreto!'), nl,
   write('Chamar menu principal prompt'), nl). 
 
 listarAtracoesFestival:-
 
 	setup_bd_festival,
-	findall((N,M,O), festival(N, M, O), ListaClientes),
-	writeln("Usuários cadastrados: "),
+	findall((N,M,O), festival(N, M, O), ListaClientes), nl,
+	writeln("Festivais cadastrados: "),
 	exibeClientes(ListaClientes),
-	told, nl,
-	fimListagemClientes.
+	told, nl, 
+	fimListagemClientes,
+  menuPrincpalHandler.
 
 fimListagemClientes:-
 	writeln("Clique em enter para continuar: "),
@@ -122,7 +137,7 @@ consultarAtracaoFestival:-
   (get_cpfs_clientes(Nomes), member(Nome, Nomes) -> nl, writeln("Atracao nao encontrada."), nl,menuCriarConta;
 	findall((Palco, Horario,Nome,Genero), atracao(Palco, Horario, Nome, Genero), Atracao),
   exibeClientes(Atracao),nl),
-  write('Chamar menu principal prompt').
+  menuPrincpalHandler.
 
 consultarDiaDoFestival:-
   setup_bd_festival,
@@ -159,7 +174,7 @@ comandaOnlineMenu:-
     write('TODO');
   Opcao =:= "3" ->
     % OPCAO 3
-    write('Chamar menu principal prompt');
+    menuPrincpalHandler;
 
   % ELSE
   write('OPÇÃO INVÁLIDA!'), nl, 

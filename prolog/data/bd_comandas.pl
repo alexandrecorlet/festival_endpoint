@@ -1,3 +1,3 @@
 :- dynamic comanda/3.
 
-%comanda(_, _, _, _).
+%comanda(_, _, _,).
