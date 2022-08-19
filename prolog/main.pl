@@ -79,7 +79,7 @@ menuLogin:-
   % if
   (isValidCpfAndSenha(Cpf, Senha)
     ->
-    (login_cliente(Cpf, Senha) -> 
+    (login_cliente(Cpf, Senha) -> menuPrincipalHandler(Cpf)),
     nl, write('LOGIN REALIZADO COM SUCESSO!'), 
     nl, menuPrincpalHandler(Cpf);                     
 
@@ -88,7 +88,7 @@ menuLogin:-
   write('CAMPOS INVÁLIDO!'), nl, menuLogin).
 
 menuComprarIngresso(Cpf):-
- write(Cpf), nl, nl
+  write(Cpf), nl, nl,
   nl,
   printIdDiasDoFestival,
   write('Qual o id do dia do festival?'), nl,
@@ -153,30 +153,36 @@ consultarDiaDoFestival:-
 	findall((A, B,C,Dia), festival(A, B, C, Dia), Festival),
   exibeClientes(Festival),nl),
   menuPrincpalHandler(Cpf).
-  
+
 comandaOnlineMenu(Cpf):-
-  nl,
+  nl, 
   printMenuComandaOnline,
-  write('Digite uma opção: '),
+  write("Escolha uma opcao: "),
   leString(Opcao),
 
-  (Opcao =:= "1" ->
-    % OPCAO 1
-    %TODO: VERIFICAR SE O USER EH MAIOR DE IDADE
-    printProdutosMenoridade, nl,
-    maiorIdade(Resp, "S") -> printProdutosMaioridade;
+  Opcao =:= "1" ->
+    compraOnline(Cpf, IdProduto, Quantidade); 
   Opcao =:= "2" ->
-    % OPCAO 2 
-    %TODO: BUSCAR O EXTRATO DO USER NO EM SEU RESPECTIVO .TXT
-    nl,
-    write('TODO');
-  Opcao =:= "3" ->
-    % OPCAO 3
-    menuPrincpalHandler(Cpf);
+    write("Verificar extrato do usuario");
 
-  % ELSE
-  write('OPÇÃO INVÁLIDA!'), nl, 
-  MenuPrincipalHandler(Cpf)).
+  Opcao =:= "3" ->
+    menuPrincipalHandler(Cpf);
+
+  write("OPCAO INVALIDA!"),
+  menuPrincipalHandler(Cpf).
+
+compraOnline(Cpf, IdProduto, Quantidade):-
+    write("Eh maioridade? (S/N)? "),
+    leString(Resp),
+
+    Resp =:= "N" -> 
+      printProdutosMenoridade,
+      comprar(IdProduto, Quantidade),
+      write("Compra realizada!");
+
+    printProdutosMaioridade,
+    comprar(IdProduto, Quantidade);
+    write("Compra realizada!").
 
 consultarAtracaoPorData:-
   setup_bd_festival, nl,
