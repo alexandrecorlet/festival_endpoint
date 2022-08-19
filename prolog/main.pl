@@ -26,10 +26,10 @@ menuBoasVindasHandler():-
   menuBoasVindas(),
   nl,
   leString(I), 
-  (I =:= "1" -> menuLogin, nl;                               % menu login 
-  I =:= "2" -> menuCriarConta, nl;                               % menu criar conta
-  I =:= "3" -> abort;                                            % encerra execucao
-  write('OPÇÃO INVÁLIDA!'), nl,                                  % opcao invalida
+  (I =:= "1" -> menuLogin, nl;                               
+  I =:= "2" -> menuCriarConta, nl;                          
+  I =:= "3" -> abort;                                      
+  write('OPÇÃO INVÁLIDA!'), nl,                           
   menuBoasVindasHandler).
 
 menuCriarConta:-
@@ -49,7 +49,8 @@ menuCriarConta:-
 	assertz(cliente(Cpf, Senha, Resp)),
 	adicionaCliente,
 	writeln("Cliente cadastrado com sucesso!"),nl),
-     nl, write('CONTA CRIADA!'), nl, menuPrincpalHandler;                       % TODO: REGISTRAR USER NO DB
+     nl, write('CONTA CRIADA!'), nl, 
+     menuPrincpalHandler;                       
 
   % else
   write('CAMPOS INVÁLIDO!'), nl,
@@ -80,7 +81,8 @@ menuLogin:-
   (isValidCpfAndSenha(Cpf, Senha)
     ->
     (login_cliente(Cpf, Senha) ->  menuPrincpalHandler), 
-    nl, write('LOGIN REALIZADO COM SUCESSO!'), nl, menuPrincpalHandler;                       % TODO: REGISTRAR USER NO DB
+    nl, write('LOGIN REALIZADO COM SUCESSO!'), 
+    nl, menuPrincpalHandler;                     
 
   % else
   nl,
@@ -143,7 +145,7 @@ consultarAtracaoFestival:-
 consultarDiaDoFestival:-
   setup_bd_festival,
   nl,
-  %printIdDiasDoFestival,
+  printIdDiasDoFestival,
   write('Digite o id do dia do festival que deseja consultar: '), 
   nl,
   leString(Dia),
