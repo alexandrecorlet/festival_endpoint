@@ -1,4 +1,4 @@
-- module(util, [checkCpfAndSenha/2, isValidCpfAndSenha/2, catalogoItensCompletos/2, catalogoItensIncompletos/2, leString/2]).
+- module(util, [checkCpfAndSenha/2, isValidCpfAndSenha/2, catalogoItensCompletos/2, catalogoItensIncompletos/2, leString/2, comprar/2]).
 
 leString(S):- read_line_to_string(user_input, S).
 
@@ -73,4 +73,4 @@ printMenuPrincipal:-
   write('(5) Consultar Dia de Festival'), nl,
   write('(6) Consultar Atrações por Data'), nl,
   write('(7) Sair'), nl.
-
+  

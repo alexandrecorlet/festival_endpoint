@@ -4,7 +4,7 @@ setup_bd :-
 loginCliente(Cpf, Senha) :-
 	nl,
 	(cliente(Cpf, Senha, Maior) -> nl, writeln("Login realizado com sucesso!"), nl;
-	writeln("Senha incorreta."), nl, false).
+	writeln("Senha incorreta."), nl, menuLogin).
 
 login_cliente(Cpf, Senha) :-
 	setup_bd,
