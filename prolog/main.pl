@@ -209,7 +209,7 @@ compraOnline(Cpf, IdProduto, Quantidade,[DeMaior]):-
     leString(IdProduto),
     write("Digite a quantidade que deseja: "),
     leString(Quantidade),
-    
+
     atom_number(IdProduto, Y),
     Y > 4 -> nl,write("Codigo invalido"),nl,menuPrincipalHandler(Cpf);
 
@@ -219,12 +219,11 @@ compraOnline(Cpf, IdProduto, Quantidade,[DeMaior]):-
 
 
 comprar(IdProduto, Quantidade, Cpf):-
-  setup_bd_itens,
-  nl,
-  
   atom_number(IdProduto, Y),
   Y > 7 -> nl,write("Codigo invalido"),nl,menuPrincipalHandler(Cpf);
-  
+  setup_bd_itens,
+  nl,
+
   findall((Nome), item(IdProduto, Nome,_,_), [NomeProd] ),
   findall((Preco), item(IdProduto, _,_, Preco), [PrecoProd] ),
 
