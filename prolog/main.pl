@@ -200,7 +200,8 @@ compraOnline(Cpf, IdProduto, Quantidade,[DeMaior]):-
       leString(Quantidade),
 
       comprar(IdProduto, Quantidade,Cpf),
-      write("Compra realizada!");
+      write("Compra realizada!"),
+      menuPrincipalHandler(Cpf);
 
     printProdutosMenoridade,
 
@@ -209,19 +210,14 @@ compraOnline(Cpf, IdProduto, Quantidade,[DeMaior]):-
     write("Digite a quantidade que deseja: "),
     leString(Quantidade),
 
-    IdProduto>4 -> nl,write("Id Invalido"),nl,menuPrincipalHandler(Cpf);
-    IdProduto<0 -> nl,write("Id Invalido"),nl,menuPrincipalHandler(Cpf);
-
     comprar(IdProduto, Quantidade,Cpf);
-    write("Compra realizada!").
+    write("Compra realizada!"),
+    menuPrincipalHandler(Cpf).
 
 
 comprar(IdProduto, Quantidade, Cpf):-
   setup_bd_itens,
   nl,
-  
-  IdProduto>7 -> nl,write("Id Invalido"),nl,menuPrincipalHandler(Cpf);
-  IdProduto<0 -> nl,write("Id Invalido"),nl,menuPrincipalHandler(Cpf);
 
   findall((Nome), item(IdProduto, Nome,_,_), [NomeProd] ),
   findall((Preco), item(IdProduto, _,_, Preco), [PrecoProd] ),
@@ -234,8 +230,6 @@ comprar(IdProduto, Quantidade, Cpf):-
 
 getComanda(Cpf):-
   setup_bd_comanda,
-  nl,
-  write(Cpf),
   nl,
   TempCpf =Cpf,
 
