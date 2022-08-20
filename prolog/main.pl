@@ -278,15 +278,57 @@ exibirComanda([N|TN], [PI|TPI], [Q|TQ], [PF|TPF],Cpf):-
 
 
 consultarAtracaoPorData(Cpf):-
-  setup_bd_festival, nl,
-  write('Digite a data'), nl,
-  leString(Data),
-  nl,
-  write('Atraçoes no dia'), nl,
-  (get_list(Datas), member(Data, Datas) -> nl, writeln("Nada foi encontrado"), nl,menuPrincipalHandler(Cpf);
-	findall((A, B,Data,C), festival(A, B, Data, C), Festival),
-  exibeLista(Festival),nl),
+  setup_bd_festival,
+  write('Digite a data inicial: '), nl,
+  leString(Data_inicial), split_string(Data_inicial, "/", "", Inicio), nl,
+  converte(Inicio, Inicios),
+  date(Inicios, Int_inicial),
+
+  write('Digite a data final: '), nl,
+  leString(Data_final), split_string(Data_final, "/", "", Final),nl,
+  converte(Final, Finals),
+  date(Finals, Int_final),
+
+  findall((D), festival(N, M, D,C), ListaDatas),
+  findall((N,M,O,C), festival(N, M, O,C), ListaFestivais),
+
+  exibirDatas(ListaDatas,Int_inicial,Int_final,ListaFestivais),
+
   menuPrincipalHandler(Cpf).
+
+
+date([D, M, A], Dias) :- Dias is D + M * 30 + A * 365.
+
+converte([], []).
+converte([X | Xs], [Y | Ys]):-
+  atom_number(X, Y),
+  converte(Xs, Ys).
+
+exibirDatas([], Data_inicial, Data_final,[]):-
+	writeln("Nenhuma data encontrada."), 
+	nl.
+
+exibirDatas([D], Data_inicial, Data_final,[F]):-
+
+  split_string(D, "/", "", Comparacao),
+
+  converte(Comparacao, Comparacoes),
+  date(Comparacoes, Int_comparaco),
+
+
+  Int_comparaco>Data_inicial,Int_comparaco<Data_final -> writeln(F);
+	nl.
+
+exibirDatas([D|TD], Data_inicial, Data_final, [F|TF]):-
+
+  split_string(D, "/", "", Comparacao),
+
+  converte(Comparacao, Comparacoes),
+  date(Comparacoes, Int_comparacao),
+
+  Int_comparacao>Data_inicial,Int_comparacao<Data_final -> writeln(F),exibirDatas(TD, Data_inicial, Data_final,TF);
+
+  exibirDatas(TD, Data_inicial, Data_final,TF).
 
 menuPrincipalHandler(Cpf):-
   nl,
