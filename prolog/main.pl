@@ -14,6 +14,14 @@ setup_bd_atracoes :-
 setup_bd_ingressos :- 
   consult('./data/bd_ingressos.pl').
 
+setup_bd_itens :- 
+  consult('./data/bd_itens.pl').
+
+setup_bd_comanda :- 
+  consult('./data/bd_comandas.pl').
+
+  
+
 menuBoasVindas():-
   nl,
   print('Seja bem-vindo ao Festival Endpoint!'), nl,
@@ -26,10 +34,10 @@ menuBoasVindasHandler():-
   menuBoasVindas(),
   nl,
   leString(I), 
-  (I =:= "1" -> menuLogin, nl;                               % menu login 
-  I =:= "2" -> menuCriarConta, nl;                               % menu criar conta
-  I =:= "3" -> abort;                                            % encerra execucao
-  write('OPÇÃO INVÁLIDA!'), nl,                                  % opcao invalida
+  (I =:= "1" -> menuLogin, nl;                               
+  I =:= "2" -> menuCriarConta, nl;                          
+  I =:= "3" -> abort;                                      
+  write('OPÇÃO INVÁLIDA!'), nl,                           
   menuBoasVindasHandler).
 
 menuCriarConta:-
@@ -40,22 +48,21 @@ menuCriarConta:-
   write('Você é maior de idade (S/N)? '),
   leString(Resp),
 
-
-
   % if
   (isValidCpfAndSenha(Cpf, Senha)
     ->
-    (get_cpfs_clientes(Cpfs), member(Cpf, Cpfs) -> nl, writeln("Cpf já cadastrado."), nl,menuCriarConta;
+    (get_list(Cpfs), member(Cpf, Cpfs) -> nl, writeln("Cpf já cadastrado."), nl,menuCriarConta;
 	assertz(cliente(Cpf, Senha, Resp)),
 	adicionaCliente,
 	writeln("Cliente cadastrado com sucesso!"),nl),
-     nl, write('CONTA CRIADA!'), nl, menuPrincpalHandler;                       % TODO: REGISTRAR USER NO DB
+     nl, write('CONTA CRIADA!'), nl, 
+     menuPrincipalHandler(Cpf);                       
 
   % else
   write('CAMPOS INVÁLIDO!'), nl,
   menuCriarConta).
 
-get_cpfs_clientes(Cpfs) :- 
+get_list(Cpfs) :- 
 	findall(Cpf, cliente(Cpf,_,_), Cpfs).
 
 arquivo_vazio :-
@@ -73,151 +80,245 @@ adicionaCliente :-
 	listing(cliente/3),
 	told.
 
+adicionaComanda :-
+	setup_bd_comanda,
+	tell('./data/bd_comandas.pl'), nl,
+	listing(comanda/5),
+	told.
+
 menuLogin:-
   nl,
   checkCpfAndSenha(Cpf, Senha),
+
   % if
   (isValidCpfAndSenha(Cpf, Senha)
     ->
-    (login_cliente(Cpf, Senha) ->  menuPrincpalHandler), 
-    nl, write('LOGIN REALIZADO COM SUCESSO!'), nl, menuPrincpalHandler;                       % TODO: REGISTRAR USER NO DB
+    (login_cliente(Cpf, Senha) -> menuPrincipalHandler(Cpf)),
+    nl, 
+    nl, menuPrincipalHandler(Cpf);                     
 
   % else
   nl,
   write('CAMPOS INVÁLIDO!'), nl, menuLogin).
 
-menuComprarIngresso:-
+menuComprarIngresso(Cpf):-
   nl,
   printIdDiasDoFestival,
   write('Qual o id do dia do festival?'), nl,
   leString(Id),
 
-  (isValidFestivalId(Id) -> assertz(ingresso("cpf", Id)),                              % CPF e Id do FESTIVAL
+  (isValidFestivalId(Id) -> assertz(ingresso(Cpf, Id)),                              % CPF e Id do FESTIVAL
   adicionaIngresso, 
   nl,
   writeln('Ingresso comprado!'), nl,
-  menuPrincpalHandler;
+  menuPrincipalHandler(Cpf);
   	
   nl,
   writeln('ID incorreto!'), nl,
-  menuPrincpalHandler). 
+  menuPrincipalHandler(Cpf)). 
 
-listarAtracoesFestival:-
+listarAtracoesFestival(Cpf):-
 
 	setup_bd_festival,
 	findall((N,M,O,C), festival(N, M, O,C), ListaFestivais), nl,
 	writeln("Festivais cadastrados: "),
-	exibeClientes(ListaFestivais),
+	exibeLista(ListaFestivais),
 	told, 
-  menuPrincpalHandler.
+  menuPrincipalHandler(Cpf).
 
 fimListagemClientes:-
 	writeln("Clique em enter para continuar: "),
 	read_line_to_string(user_input, _).
 
-exibeClientes([]) :-
+exibeLista([]) :-
 	nl,
 	writeln("Nada encontrado.").
 
-exibeClientes([H]) :-
+exibeLista([H]) :-
 	write("- "),
 	writeln(H).
 
-exibeClientes([H|T]) :-
+exibeLista([H|T]) :-
 	write("- "),
 	writeln(H),
-	exibeClientes(T).
+	exibeLista(T).
 
-consultarAtracaoFestival:-
+consultarAtracaoFestival(Cpf):-
   setup_bd_atracoes,
   nl,
   write('Digite o nome da atração: '),
   leString(Nome),
   %formatarAtracao(Nome, AtracaoFormatada),
   write('INFO DA atração'), nl,
-  (get_cpfs_clientes(Nomes), member(Nome, Nomes) -> nl, writeln("Atracao nao encontrada."), nl,menuCriarConta;
+  (get_list(Nomes), member(Nome, Nomes) -> nl, writeln("Atracao nao encontrada."), nl,menuCriarConta;
 	findall((Palco, Horario,Nome,Genero), atracao(Palco, Horario, Nome, Genero), Atracao),
-  exibeClientes(Atracao),nl),
-  menuPrincpalHandler.
+  exibeLista(Atracao),nl),
+  menuPrincipalHandler(Cpf).
 
-consultarDiaDoFestival:-
+consultarDiaDoFestival(Cpf):-
   setup_bd_festival,
   nl,
-  %printIdDiasDoFestival,
+  printIdDiasDoFestival,
   write('Digite o id do dia do festival que deseja consultar: '), 
   nl,
   leString(Dia),
-  (get_cpfs_clientes(Dias), member(Dia, Dias) -> nl, writeln("Nada foi encontrado"), nl,menuPrincpalHandler;
+  (get_list(Dias), member(Dia, Dias) -> nl, writeln("Nada foi encontrado"), nl,menuPrincipalHandler(Cpf);
 	findall((A, B,C,Dia), festival(A, B, C, Dia), Festival),
-  exibeClientes(Festival),nl),
-  menuPrincpalHandler.
-  
-comandaOnlineMenu:-
-  nl,
+  exibeLista(Festival),nl),
+  menuPrincipalHandler(Cpf).
+
+comandaOnlineMenu(Cpf):-
+  setup_bd_cliente,
+  findall((Maior), cliente(Cpf, _, Maior), DeMaior ),
+  nl, 
   printMenuComandaOnline,
-  write('Digite uma opção: '),
+  write("Escolha uma opcao: "),
   leString(Opcao),
 
   (Opcao =:= "1" ->
-    % OPCAO 1
-    %TODO: VERIFICAR SE O USER EH MAIOR DE IDADE
-    write('Voce tem mais de 18 anos? (S/N): '),
-    leString(Resp),
-    printProdutosMenoridade,
-    nl,
-    maiorIdade(Resp, "S") -> printProdutosMaioridade;
+    compraOnline(Cpf, IdProduto, Quantidade, DeMaior);
+    
   Opcao =:= "2" ->
-    % OPCAO 2 
-    %TODO: BUSCAR O EXTRATO DO USER NO EM SEU RESPECTIVO .TXT
-    nl,
-    write('TODO');
+    getComanda(Cpf);
+
   Opcao =:= "3" ->
-    % OPCAO 3
-    menuPrincpalHandler;
+    menuPrincipalHandler(Cpf);
 
-  % ELSE
-  write('OPÇÃO INVÁLIDA!'), nl, 
-  write('Chamar menu principal prompt')).
+  write("OPCAO INVALIDA!"),
+  menuPrincipalHandler(Cpf)).
 
-consultarAtracaoPorData:-
+compraOnline(Cpf, IdProduto, Quantidade,[DeMaior]):-
+    setup_bd_itens,
+    nl,
+
+    DeMaior =:= "S" -> 
+      printProdutosMaioridade,
+
+      write("Digite o ID do produto: "),
+      leString(IdProduto),
+      write("Digite a quantidade que deseja: "),
+      leString(Quantidade),
+
+      comprar(IdProduto, Quantidade,Cpf),
+      write("Compra realizada!");
+
+    printProdutosMenoridade,
+
+    write("Digite o ID do produto: "),
+    leString(IdProduto),
+    write("Digite a quantidade que deseja: "),
+    leString(Quantidade),
+
+    IdProduto>4 -> nl,write("Id Invalido"),nl,menuPrincipalHandler(Cpf);
+    IdProduto<0 -> nl,write("Id Invalido"),nl,menuPrincipalHandler(Cpf);
+
+    comprar(IdProduto, Quantidade,Cpf);
+    write("Compra realizada!").
+
+
+comprar(IdProduto, Quantidade, Cpf):-
+  setup_bd_itens,
+  nl,
+  
+  IdProduto>7 -> nl,write("Id Invalido"),nl,menuPrincipalHandler(Cpf);
+  IdProduto<0 -> nl,write("Id Invalido"),nl,menuPrincipalHandler(Cpf);
+
+  findall((Nome), item(IdProduto, Nome,_,_), [NomeProd] ),
+  findall((Preco), item(IdProduto, _,_, Preco), [PrecoProd] ),
+
+  atom_number(Quantidade,QuantidadeInt),
+  PrecoFinal is PrecoProd*QuantidadeInt,
+
+  assertz(comanda(Cpf, NomeProd, PrecoProd, Quantidade, PrecoFinal)),
+  adicionaComanda.
+
+getComanda(Cpf):-
+  setup_bd_comanda,
+  nl,
+  write(Cpf),
+  nl,
+  TempCpf =Cpf,
+
+  findall((Nome), comanda(TempCpf, Nome,_,_,_), NomeList ),
+  findall((PrecoInd), comanda(TempCpf, _,PrecoInd,_,_), PrecoIndList ),
+  findall((Quantidade), comanda(TempCpf, _,_,Quantidade,_), QuantidadeList ),
+  findall((ValorTotal), comanda(TempCpf, _,_,_,ValorTotal), ValorTotalList ),
+
+  exibirComanda(NomeList,PrecoIndList,QuantidadeList,ValorTotalList,Cpf).
+
+
+exibirComanda([], [], [], [],Cpf):-
+	writeln("Nenhuma compra cadastrada."), 
+	nl,
+	menuPrincipalHandler(Cpf).
+
+exibirComanda([N], [PI], [Q], [PF],Cpf):-
+	write("Produto: "),
+	write(N),
+	write(" Preco individual: "),
+	write(PI),
+  write(" Quantidade: "),
+	write(Q),
+  write(" Preco total: "),
+	write(PF),
+	nl,
+	menuPrincipalHandler(Cpf).
+
+exibirComanda([N|TN], [PI|TPI], [Q|TQ], [PF|TPF],Cpf):-
+	write("Produto: "),
+	write(N),
+	write(" Preco individual: "),
+	write(PI),
+  write(" Quantidade: "),
+	write(Q),
+  write(" Preco total: "),
+	write(PF),
+	nl,
+	exibirComanda(TN,TPI,TQ,TPF,Cpf).
+
+
+consultarAtracaoPorData(Cpf):-
   setup_bd_festival, nl,
   write('Digite a data'), nl,
   leString(Data),
   nl,
   write('Atraçoes no dia'), nl,
-  (get_cpfs_clientes(Datas), member(Data, Datas) -> nl, writeln("Nada foi encontrado"), nl,menuPrincpalHandler;
+  (get_list(Datas), member(Data, Datas) -> nl, writeln("Nada foi encontrado"), nl,menuPrincipalHandler(Cpf);
 	findall((A, B,Data,C), festival(A, B, Data, C), Festival),
-  exibeClientes(Festival),nl),
-  menuPrincpalHandler.
+  exibeLista(Festival),nl),
+  menuPrincipalHandler(Cpf).
 
-menuPrincpalHandler:-
+menuPrincipalHandler(Cpf):-
   nl,
   printMenuPrincipal, nl,
   write('Digite uma opção: '), nl,
   leString(Opcao),
 
   (Opcao =:= "1" ->
-  menuComprarIngresso;
+  menuComprarIngresso(Cpf);
 
   Opcao =:= "2" ->
-  listarAtracoesFestival;
+  listarAtracoesFestival(Cpf);
 
   Opcao =:= "3" ->
-  comandaOnlineMenu;
+  comandaOnlineMenu(Cpf);
 
   Opcao =:= "4" ->
-  consultarAtracaoFestival;
+  consultarAtracaoFestival(Cpf);
 
   Opcao =:= "5" ->
-  consultarDiaDoFestival;
+  consultarDiaDoFestival(Cpf);
 
   Opcao =:= "6" ->
-  consultarAtracaoPorData;
-  % write('TODO'), nl, menuPrincpalHandler;
+  consultarAtracaoPorData(Cpf);
 
 
   Opcao =:= "7" ->
-  abort).
+  abort;
+  
+  write("OPCAO INVALIDA!"),
+  menuPrincipalHandler(Cpf)
+  ).
 
 main:-
   menuBoasVindasHandler().
